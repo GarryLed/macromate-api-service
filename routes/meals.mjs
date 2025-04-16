@@ -1,3 +1,13 @@
+/**
+ * Route for logging and retrieving daily meals.
+ * 
+ * GET /meals?date=YYYY-MM-DD → Fetches all meals for a specific date.
+ * 
+ * POST /meals → Adds a new meal log (e.g., Breakfast, Lunch) to the database.
+ * 
+ * Each meal log includes food items, meal type, and nutrition totals.
+ */
+
 import express from "express";
 import db from "../db/conn.mjs";
 

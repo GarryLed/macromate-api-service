@@ -1,3 +1,13 @@
+/**
+ * Route for managing user nutrition goals (calories, macros, water).
+ * 
+ * GET /goals → Retrieves all saved goal entries (currently supports one shared goal).
+ * 
+ * POST /goals → Creates or updates the daily goal for calories, macros, and water intake.
+ * 
+ * This is used by the Goals page in MacroMate frontend  to configure user goals.
+ */
+
 import express from "express";
 import db from "../db/conn.mjs";
 

@@ -1,8 +1,16 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import "express-async-errors";
+
+// Routes for the application
 import goalsRoutes from "./routes/goals.mjs";
+import mealsRoutes from "./routes/meals.mjs";
+import waterRoutes from "./routes/water.mjs";
+import calendarRoutes from "./routes/calendar.mjs";
+import weightRoutes from "./routes/weight.mjs";
+
+
+import "express-async-errors";
 
 import foods from "./routes/foods.mjs";
 
@@ -14,13 +22,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Mounting the foods routes
-// This is where we will add the routes for the foods
+
 app.use("/foods", foods);
 
-// Mounting the goals routes
-// This is where we will add the routes for the goals
+// Mounting the routes
+// This is where we will add the routes for the goals, meals, water, calendar, and weight
 app.use("/goals", goalsRoutes);
+app.use("/meals", mealsRoutes);
+app.use("/water", waterRoutes);
+app.use("/calendar", calendarRoutes);
+app.use("/weight", weightRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
