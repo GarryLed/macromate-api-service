@@ -1,18 +1,26 @@
 {
   "name": "macromate-api-service",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Express API backend for MacroMate nutrition tracker",
+  "main": "index.mjs",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.mjs",
+    "dev": "nodemon index.mjs"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Garry Ledwith",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
-    "express": "^5.1.0",
-    "mongoose": "^8.13.2"
+    "express": "^4.18.2",
+    "express-async-errors": "^3.1.1",
+    "mongoose": "^8.13.2",
+    "axios": "^1.6.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
   }
 }
+
