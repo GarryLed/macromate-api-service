@@ -12,7 +12,7 @@ import weightRoutes from "./routes/weight.mjs";
 
 import "express-async-errors";
 
-import foods from "./routes/foods.mjs";
+import foodsRoutes from "./routes/foods.mjs";
 
 dotenv.config(); // Load .env
 
@@ -23,7 +23,7 @@ app.use(cors());
 app.use(express.json());
 
 
-app.use("/foods", foods);
+app.use("/foods", foodsRoutes);
 
 // Mounting the routes
 // This is where we will add the routes for the goals, meals, water, calendar, and weight
