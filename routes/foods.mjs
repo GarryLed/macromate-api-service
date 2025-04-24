@@ -12,9 +12,7 @@
  */
 
 /**
- * @file foods.mjs
- * @description Routes for searching food items using the Edamam Food Database API.
- * This acts as a backend proxy to protect API keys and clean response data.
+
  */
 
 import express from "express";

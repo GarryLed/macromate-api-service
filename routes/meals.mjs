@@ -10,15 +10,16 @@
 
 import express from "express";
 import db from "../db/conn.mjs";
+import { ObjectId } from 'mongodb'; // Import ObjectId from mongodb to handle MongoDB IDs
 
 const router = express.Router();
-const collection = db.collection("meals");
+const mealsCollection = db.collection("meals");
 
 // GET meals for a specific date 
 router.get("/", async (req, res) => {
   const { date } = req.query;
   try {
-    const meals = await collection.find({ date }).toArray();
+    const meals = await mealsCollection.find({ date }).toArray();
     res.json(meals);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch meals" });
@@ -26,14 +27,50 @@ router.get("/", async (req, res) => {
 });
 
 // POST a new meal log
-router.post("/", async (req, res) => {
-  const mealLog = req.body;
+router.post('/', async (req, res) => {
+  const { date, mealType, foodItem } = req.body;
+
+  if (!date || !mealType || !foodItem) {
+    return res.status(400).json({ error: 'Missing meal entry fields.' });
+  }
+
   try {
-    const result = await collection.insertOne(mealLog);
-    res.status(201).json({ message: "Meal added", result });
+    const result = await mealsCollection.insertOne({
+      date,
+      mealType,
+      foodItem,
+      createdAt: new Date()
+    });
+    res.status(201).json({ message: 'Meal logged', result });
   } catch (err) {
-    res.status(500).json({ error: "Failed to add meal" });
+    console.error('Error saving meal:', err);
+    res.status(500).json({ error: 'Failed to save meal' });
   }
 });
+
+// DELETE a meal log
+// This endpoint allows for deleting a meal item by its ID.
+
+router.delete(':id', async (req, res) => { 
+  const { id } = req.params;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid MongoDB ID' });
+  }
+
+  try {
+    const result = await mealsCollection.deleteOne({ _id: new ObjectId(id) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Meal not found.' });
+    }
+
+    res.status(200).json({ message: 'Meal deleted successfully.' });
+  } catch (err) {
+    console.error('Error deleting meal:', err);
+    res.status(500).json({ error: 'Failed to delete meal.' });
+  }
+});
+
 
 export default router;

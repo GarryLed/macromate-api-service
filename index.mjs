@@ -25,6 +25,13 @@ app.use(express.json());
 
 app.use("/foods", foodsRoutes);
 
+// Middleware to log unmatched requests
+app.use((req, res, next) => {
+  console.log(`Unmatched request: ${req.method} ${req.url}`);
+  next();
+});
+
+
 // Mounting the routes
 // This is where we will add the routes for the goals, meals, water, calendar, and weight
 app.use("/goals", goalsRoutes);

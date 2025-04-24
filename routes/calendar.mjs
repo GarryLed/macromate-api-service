@@ -20,7 +20,7 @@ router.get("/:date", async (req, res) => {
     const entry = await collection.findOne({ date });
     res.json(entry || {});
   } catch (err) {
-    res.status(500).json({ error: "Failed to load calendar day" });
+    res.status(500).json({ error: "Failed to load the calendar day" });
   }
 });
 

@@ -8,53 +8,63 @@
  * This is used by the Goals page in MacroMate frontend  to configure user goals.
  */
 
-import express from "express";
-import db from "../db/conn.mjs";
+import express from 'express';
+import db from '../db/conn.mjs';
 
 const router = express.Router();
-const collection = db.collection("goals");
+const collection = db.collection('goals');
 
-// GET all goals (only one user for now)
-router.get("/", async (req, res) => {
-  try {
-    const goals = await collection.find({}).toArray();
-    res.status(200).json(goals);
-  } catch (error) {
-    console.error("Failed to fetch goals:", error);
-    res.status(500).json({ error: "Failed to fetch goals" });
-  }
-});
+// POST /goals → Save or update current goals
+router.post('/', async (req, res) => {
+  const {
+    calorieGoal,
+    waterGoal,
+    proteinPercent,
+    carbsPercent,
+    fatsPercent,
+    startingWeight,
+    targetWeight
+  } = req.body;
 
-// POST a new goal or update an existing one (basic single-user logic)
-router.post("/", async (req, res) => {
-  const { calories, proteinPercent, carbsPercent, fatsPercent, waterTarget } = req.body;
-
-  if (!calories || !proteinPercent || !carbsPercent || !fatsPercent || !waterTarget) {
-    return res.status(400).json({ error: "All fields are required" });
+  if (!calorieGoal || !waterGoal || !proteinPercent || !carbsPercent || !fatsPercent) {
+    return res.status(400).json({ error: 'Missing required goal fields.' });
   }
 
   try {
-    // Update logic: single goal for now
     const result = await collection.updateOne(
-      {}, 
+      {}, // could add user id filter here down the road 
       {
         $set: {
-          calories,
+          calorieGoal,
+          waterGoal,
           proteinPercent,
           carbsPercent,
           fatsPercent,
-          waterTarget
+          startingWeight,
+          targetWeight,
+          updatedAt: new Date()
         }
       },
       { upsert: true }
     );
 
-    res.status(200).json({ message: "Goal saved successfully", result });
-  } catch (error) {
-    console.error("Failed to save goal:", error);
-    res.status(500).json({ error: "Failed to save goal" });
+    res.status(200).json({ message: 'Goals saved successfully.', result });
+  } catch (err) {
+    console.error('Failed to save goals:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+// GET /goals - > Fetch all goals
+// Currently only supports one shared goal entry
+router.get('/', async (_req, res) => {
+  try {
+    const goal = await collection.findOne({});
+    res.status(200).json(goal);
+  } catch (err) {
+    console.error('Failed to fetch goals:', err);
+    res.status(500).json({ error: 'Internal server error.' });
   }
 });
 
 export default router;
-
