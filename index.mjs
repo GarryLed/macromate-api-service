@@ -7,7 +7,7 @@ import goalsRoutes from "./routes/goals.mjs";
 import mealsRoutes from "./routes/meals.mjs";
 import waterRoutes from "./routes/water.mjs";
 import calendarRoutes from "./routes/calendar.mjs";
-import weightRoutes from "./routes/weight.mjs";
+import weightRoutes from "./routes/weights.mjs";
 
 
 import "express-async-errors";
@@ -38,7 +38,7 @@ app.use("/goals", goalsRoutes);
 app.use("/meals", mealsRoutes);
 app.use("/water", waterRoutes);
 app.use("/calendar", calendarRoutes);
-app.use("/weight", weightRoutes);
+app.use("/weights", weightRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

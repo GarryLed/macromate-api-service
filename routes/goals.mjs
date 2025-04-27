@@ -1,11 +1,11 @@
 /**
  * Route for managing user nutrition goals (calories, macros, water).
  * 
- * GET /goals → Retrieves all saved goal entries (currently supports one shared goal).
+ * GET /goals => Retrieves the current saved goal entry.
  * 
- * POST /goals → Creates or updates the daily goal for calories, macros, and water intake.
+ * POST /goals => Creates or updates the daily goal for calories, macros, and water intake.
  * 
- * This is used by the Goals page in MacroMate frontend  to configure user goals.
+ * This is used by the Goals page in MacroMate frontend to configure user goals.
  */
 
 import express from 'express';
@@ -14,7 +14,7 @@ import db from '../db/conn.mjs';
 const router = express.Router();
 const collection = db.collection('goals');
 
-// POST /goals → Save or update current goals
+// POST /goals => Save or update current goals
 router.post('/', async (req, res) => {
   const {
     calorieGoal,
@@ -22,17 +22,21 @@ router.post('/', async (req, res) => {
     proteinPercent,
     carbsPercent,
     fatsPercent,
-    startingWeight,
-    targetWeight
   } = req.body;
 
-  if (!calorieGoal || !waterGoal || !proteinPercent || !carbsPercent || !fatsPercent) {
-    return res.status(400).json({ error: 'Missing required goal fields.' });
+  if (
+    typeof calorieGoal !== 'number' ||
+    typeof waterGoal !== 'number' ||
+    typeof proteinPercent !== 'number' ||
+    typeof carbsPercent !== 'number' ||
+    typeof fatsPercent !== 'number'
+  ) {
+    return res.status(400).json({ error: 'All goal fields must be numbers and are required.' });
   }
 
   try {
     const result = await collection.updateOne(
-      {}, // could add user id filter here down the road 
+      { userId: 'shared-user' }, // Placeholder for future multi-user support
       {
         $set: {
           calorieGoal,
@@ -40,26 +44,26 @@ router.post('/', async (req, res) => {
           proteinPercent,
           carbsPercent,
           fatsPercent,
-          startingWeight,
-          targetWeight,
           updatedAt: new Date()
         }
       },
       { upsert: true }
     );
 
-    res.status(200).json({ message: 'Goals saved successfully.', result });
+    res.status(200).json({ message: 'Nutrition goals saved successfully.', result });
   } catch (err) {
-    console.error('Failed to save goals:', err);
+    console.error('Failed to save nutrition goals:', err);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
 
-// GET /goals - > Fetch all goals
-// Currently only supports one shared goal entry
+// GET /goals => Fetch current goals
 router.get('/', async (_req, res) => {
   try {
-    const goal = await collection.findOne({});
+    const goal = await collection.findOne({ userId: 'shared-user' });
+    if (!goal) {
+      return res.status(404).json({ error: 'No nutrition goals found.' });
+    }
     res.status(200).json(goal);
   } catch (err) {
     console.error('Failed to fetch goals:', err);
