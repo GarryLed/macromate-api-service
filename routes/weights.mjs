@@ -66,4 +66,21 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// GET /weights/current - Fetch the most recent weight log
+router.get('/current', async (_req, res) => {
+  try {
+    const latestWeight = await collection.find({}).sort({ date: -1 }).limit(1).toArray();
+
+    if (latestWeight.length > 0) {
+      res.status(200).json(latestWeight[0]); 
+    } else {
+      res.status(404).json({ error: 'No weight logs found.' });
+    }
+  } catch (err) {
+    console.error('Failed to fetch current weight:', err.stack || err.message || err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+
 export default router;

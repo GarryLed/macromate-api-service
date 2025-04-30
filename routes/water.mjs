@@ -9,32 +9,43 @@
  */
 
 
-import express from "express";
-import db from "../db/conn.mjs";
+import express from 'express';
+import db from '../db/conn.mjs';
 
 const router = express.Router();
-const collection = db.collection("water");
+const collection = db.collection('water');
 
-// GET water intake by date
-router.get("/", async (req, res) => {
-  const { date } = req.query;
+// POST /water - Add a new water log
+router.post('/', async (req, res) => {
+  const { date, amount } = req.body;
+  if (!date || !amount) return res.status(400).json({ error: 'Missing fields.' });
+
   try {
-    const entries = await collection.find({ date }).toArray();
-    res.json(entries);
+    await collection.insertOne({ date, amount, createdAt: new Date() });
+    res.status(201).json({ message: 'Water logged.' });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch water intake" });
+    console.error('Insert error:', err);
+    res.status(500).json({ error: 'Internal error.' });
   }
 });
 
-// POST new water intake
-router.post("/", async (req, res) => {
-  const waterEntry = req.body;
-  try {
-    const result = await collection.insertOne(waterEntry);
-    res.status(201).json({ message: "Water log added", result });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to log water intake" });
-  }
+// GET /water - Fetch all water logs for a specific date
+router.get('/:date', async (req, res) => {
+  const { date } = req.params;
+  const results = await collection.find({ date }).toArray();
+  res.json(results);
+});
+
+// GET /water/total/:date - Fetch total water intake for a specific date
+router.get('/total/:date', async (req, res) => {
+  const { date } = req.params;
+
+  const sum = await collection.aggregate([
+    { $match: { date } },
+    { $group: { _id: null, total: { $sum: '$amount' } } }
+  ]).toArray();
+
+  res.json({ total: sum[0]?.total || 0 });
 });
 
 export default router;

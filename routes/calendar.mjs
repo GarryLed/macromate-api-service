@@ -1,10 +1,7 @@
 /**
  * Route for retrieving and storing full daily summaries.
  * 
- * GET /calendar/:date=> Retrieves a complete daily snapshot (meals, macros, water, weight).
- * 
- * POST /calendar => Saves or updates the entire day's summary.
- * 
+ * GET /calendar/:date => Retrieves a complete daily snapshot (meals, macros, water, weight).
  * 
  */
 
@@ -17,6 +14,7 @@ const router = express.Router();
 // Collections
 const mealsCollection = db.collection('meals');
 const weightsCollection = db.collection('weights');
+const waterCollection = db.collection('water');
 
 // GET /calendar/:date => Fetch daily summary (calories, macros, water, weight)
 router.get('/:date', async (req, res) => {
@@ -27,16 +25,14 @@ router.get('/:date', async (req, res) => {
   }
 
   try {
-    // Fetch all meals logged for the selected date
-    const meals = await mealsCollection.find({ date: date }).toArray();
+    // === MEAL TOTALS ===
+    const meals = await mealsCollection.find({ date }).toArray();
 
-    // Initialize totals
     let totalCalories = 0;
     let totalProtein = 0;
     let totalCarbs = 0;
     let totalFat = 0;
 
-    // Sum all macros from the meals for a given date (this has a bug where it is accumulating the macros for all meals, not just the ones for the date)
     for (const meal of meals) {
       totalCalories += meal.foodItem?.calories || 0;
       totalProtein += meal.foodItem?.protein || 0;
@@ -44,19 +40,20 @@ router.get('/:date', async (req, res) => {
       totalFat += meal.foodItem?.fat || 0;
     }
 
-    // Fetch the weight logged for that date
-    const weightEntry = await weightsCollection.findOne({ date: date });
+    // === WEIGHT ON THE DAY ===
+    const weightEntry = await weightsCollection.findOne({ date });
 
-   
-    const waterIntake = 0; // Placeholder value (to be replaced with actual water intake logic)
+    // === WATER TOTAL FOR THE DAY ===
+    const waterLogs = await waterCollection.find({ date }).toArray();
+    const totalWater = waterLogs.reduce((sum, entry) => sum + (entry.amount || 0), 0);
 
-    // Respond with the summary
+    // === RESPONSE ===
     res.status(200).json({
       totalCalories: Math.round(totalCalories * 10) / 10,
       totalProtein: Math.round(totalProtein * 10) / 10,
       totalCarbs: Math.round(totalCarbs * 10) / 10,
       totalFat: Math.round(totalFat * 10) / 10,
-      water: waterIntake,
+      water: totalWater, // Total water intake in milliliters
       weight: weightEntry ? weightEntry.weight : 0
     });
 
