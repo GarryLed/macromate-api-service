@@ -47,15 +47,20 @@ router.get('/:date', async (req, res) => {
     const waterLogs = await waterCollection.find({ date }).toArray();
     const totalWater = waterLogs.reduce((sum, entry) => sum + (entry.amount || 0), 0);
 
-    // === RESPONSE ===
+    // === RESPONSE FOR THE DAY SUMMARY ===
     res.status(200).json({
-      totalCalories: Math.round(totalCalories * 10) / 10,
-      totalProtein: Math.round(totalProtein * 10) / 10,
-      totalCarbs: Math.round(totalCarbs * 10) / 10,
-      totalFat: Math.round(totalFat * 10) / 10,
-      water: totalWater, // Total water intake in milliliters
-      weight: weightEntry ? weightEntry.weight : 0
+      date,
+      calories: Math.round(totalCalories * 10) / 10,
+      macros: {
+        protein: Math.round(totalProtein * 10) / 10,
+        carbs: Math.round(totalCarbs * 10) / 10,
+        fats: Math.round(totalFat * 10) / 10
+      },
+      waterIntake: totalWater,
+      weight: weightEntry?.weight || 0,
+      
     });
+    
 
   } catch (err) {
     console.error('Failed to load calendar summary:', err.stack || err.message || err);
